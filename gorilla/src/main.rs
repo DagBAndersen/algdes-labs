@@ -208,7 +208,7 @@ fn parse_fasta(file: &str) -> Vec<(String, String)> {
     for x in contents.split('>').filter(|x| !x.is_empty()) {
         let lines = x.split_once("\n").unwrap();
 
-        let name = lines.0.trim().to_string();
+        let name = lines.0.split_once(" ").unwrap().0.to_string();
 
         let seq = lines.1.replace("\n", "");
         new_vec.push((name, seq));
