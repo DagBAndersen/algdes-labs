@@ -67,8 +67,7 @@ fn get_blosum_matrix() -> [[i32; 24]; 24] {
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
     let lines: Vec<&str> = contents.split("\n").collect();
-    for (i, line) in lines.iter().skip(1).enumerate() {
-        // Copilot forgot `skip(1)`
+    for (i, line) in lines.iter().skip(1).enumerate() { // Copilot forgot `skip(1)`
         let mut chars = line.split_whitespace().skip(1);
         for j in 0..24 {
             matrix[i][j] = chars.next().unwrap().parse::<i32>().unwrap();
@@ -139,16 +138,7 @@ fn align(seq1: &str, seq2: &str, alignment_cost: i32) -> (i32, String, String) {
     }
 
     let score = dp[seq1.len()][seq2.len()];
-    // println!("{} {} {}", seq1, seq2, score);
-
-    // for x in dp.iter() {
-    //     println!("{:?}", x);
-    // }
-    // println!("");
-    // for x in backtrack.iter() {
-    //     println!("{:?}", x);
-    // }
-
+    
     let mut i = seq1.len();
     let mut j = seq2.len();
     let mut seq1_alignment = String::new();
@@ -206,11 +196,11 @@ fn parse_fasta(file: &str) -> Vec<(String, String)> {
     file.read_to_string(&mut contents).unwrap();
     let mut new_vec = Vec::new();
     for x in contents.split('>').filter(|x| !x.is_empty()) {
-        let lines = x.split_once("\n").unwrap();
+        let (name_line, sequence_line) = x.split_once("\n").unwrap();
 
-        let name = lines.0.split_once(" ").unwrap().0.to_string();
+        let name = name_line.splitn(1, " ").collect::<Vec<&str>>()[0].to_string();
 
-        let seq = lines.1.replace("\n", "");
+        let seq = sequence_line.replace("\n", "");
         new_vec.push((name, seq));
     }
     new_vec

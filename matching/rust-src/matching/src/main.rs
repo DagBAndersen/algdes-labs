@@ -110,13 +110,13 @@ fn prep_men_pref(pref: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
 fn prep_woman_pref(pref: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
     pref.iter()
         .map(|a| a.iter().map(|&x| (x - 1) / 2).collect())
-        .map(|a| invert_woman_pref(a))
+        .map(invert_prefs)
         .collect()
 }
 
-fn invert_woman_pref(women_pref: Vec<usize>) -> Vec<usize> {
-    let mut wp = vec![0; women_pref.len()];
-    for (i, &m) in women_pref.iter().enumerate() {
+fn invert_prefs(prefs: Vec<usize>) -> Vec<usize> {
+    let mut wp = vec![0; prefs.len()];
+    for (i, &m) in prefs.iter().enumerate() {
         wp[m] = i;
     }
     wp
