@@ -65,17 +65,22 @@ fn ford_fulkerson(graph: &mut Vec<Vec<i32>>, s: usize, t: usize) -> i32 {
         flow += min_capacity;
     }
 
-    let mut visited = vec![false; graph.len()];
-    dfs(graph, s, &mut visited);
+    print_min_cut(&original_copy, graph, s);
 
-    for i in 0..graph.len() {
-        for j in 0..graph.len() {
-            if original_copy[i][j] > 0 && visited[i] && !visited[j] {
-                println!("{} {} {}", i, j, original_copy[i][j]);
+    flow
+}
+
+fn print_min_cut(original_graph: &Vec<Vec<i32>>, residual_graph: &Vec<Vec<i32>>, s: usize) {
+    let mut visited = vec![false; residual_graph.len()];
+    dfs(residual_graph, s, &mut visited);
+
+    for i in 0..residual_graph.len() {
+        for j in 0..residual_graph.len() {
+            if original_graph[i][j] > 0 && visited[i] && !visited[j] {
+                println!("{} {} {}", i, j, original_graph[i][j]);
             }
         }
     }
-    flow
 }
 
 fn dfs(graph: &Vec<Vec<i32>>, s: usize, visited: &mut Vec<bool>) {
