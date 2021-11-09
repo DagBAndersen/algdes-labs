@@ -1,4 +1,8 @@
-use std::{collections::VecDeque, fs::File, io::Read};
+use std::{
+    collections::{HashMap, VecDeque},
+    fs::{self, File},
+    io::Read,
+};
 
 #[derive(Debug)]
 struct Node {
@@ -21,34 +25,47 @@ struct Graph {
 }
 
 fn main() {
-
     // get string from args
     let args: Vec<String> = std::env::args().collect();
-    let file = &args[1];
+    if let Some(file) = &args.get(1) {
+        println!("{}", file);
 
-    println!("{}", file);
+        let mut graph = parse_input(&file);
 
-    let mut graph = parse_input(&file);
+        dbg!(&graph.start);
+        dbg!(&graph.end);
+        dbg!(&graph.nodes);
 
-    dbg!(&graph.start);
-    dbg!(&graph.end);
-    dbg!(&graph.nodes);
-    // print line in debug
+        dbg!(&graph.edges);
 
-    dbg!(&graph.edges);
-    
-    graph_filter_red_black_edges(&mut graph);
+        graph_filter_red_black_edges(&mut graph);
 
-    let path = bfs(&graph);
+        let path = bfs(&graph);
 
-    println!("path: {:?}", &path);
+        println!("path: {:?}", &path);
+    } else {
+        let paths = fs::read_dir("../data").unwrap();
 
+        for path in paths {
+            let path = path.unwrap().path().display().to_string();
+            if !path.ends_with(".txt") {
+                continue;
+            };
+            let mut graph = parse_input(&path);
+
+            graph_filter_red_black_edges(&mut graph);
+
+            let solution = bfs(&graph);
+
+            println!("{:?} {}", &solution, path);
+        }
+    }
 }
 
 fn graph_filter_red_black_edges(graph: &mut Graph) {
-    graph.edges.retain(|edge| {
-        &graph.nodes[edge.node1].red != &graph.nodes[edge.node2].red
-    });
+    graph
+        .edges
+        .retain(|edge| &graph.nodes[edge.node1].red != &graph.nodes[edge.node2].red);
 }
 
 // Every other node has to be red. It need to switch between red and black.
@@ -60,12 +77,12 @@ fn bfs(graph: &Graph) -> bool {
     queue.push_back(graph.start);
     visited[graph.start] = true;
 
-    while let Some(node_index) = queue.pop_front()  {
+    while let Some(node_index) = queue.pop_front() {
         //let node = &graph.nodes[node_index];
         path.push(node_index);
 
         if node_index == graph.end {
-            return true
+            return true;
         }
 
         for edge in &graph.edges {
@@ -85,9 +102,6 @@ fn bfs(graph: &Graph) -> bool {
 }
 
 fn parse_input(file: &str) -> Graph {
-    let mut edges = Vec::new();
-    let mut nodes = Vec::new();
-
     // read file
     let mut file = File::open(file).expect("file not found");
 
@@ -107,12 +121,16 @@ fn parse_input(file: &str) -> Graph {
         .next()
         .unwrap()
         .split_whitespace()
-        .map(|x| x.parse::<usize>().unwrap())
-        .collect::<Vec<usize>>();
+        .collect::<Vec<&str>>();
     let number_of_nodes = first_line[0];
     let number_of_edges = first_line[1];
     let start_node = second_line[0];
     let end_node = second_line[1];
+
+    let mut edges = Vec::with_capacity(number_of_edges);
+    let mut nodes = Vec::with_capacity(number_of_nodes);
+
+    let mut nodes_map = HashMap::new();
 
     for index in 0..number_of_nodes {
         let node: Vec<String> = lines
@@ -121,22 +139,28 @@ fn parse_input(file: &str) -> Graph {
             .split_whitespace()
             .map(|x| x.to_string())
             .collect();
+        nodes_map.insert(node[0].clone(), index);
         nodes.push(Node {
             index: index,
             red: if node.get(1).is_some() { true } else { false },
         });
     }
 
-    for index in 0..number_of_edges {
+    let start_node = *nodes_map.get(start_node).unwrap();
+    let end_node = *nodes_map.get(end_node).unwrap();
+
+    for _ in 0..number_of_edges {
         let edge: Vec<String> = lines
             .next()
             .unwrap()
             .split_whitespace()
             .map(|x| x.to_string())
             .collect();
+        let node1 = nodes_map.get(&edge[0]).unwrap();
+        let node2 = nodes_map.get(&edge[2]).unwrap();
         edges.push(Edge {
-            node1: edge[0].parse::<usize>().unwrap(),
-            node2: edge[2].parse::<usize>().unwrap(),
+            node1: *node1,
+            node2: *node2,
         });
     }
 
